@@ -1,3 +1,4 @@
+import os
 import openai
 import pandas as pd
 from flask import Flask, render_template, request, jsonify
@@ -8,11 +9,11 @@ from recommendation import url_out, recommend_songs_with_main_logic
 app = Flask(__name__)
 
 # 设置 OpenAI API 密钥
-openai.api_key = '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'
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # 使用 Hugging Face Inference API 进行情感分析
 HF_API_URL = "https://api-inference.huggingface.co/models/bhadresh-savani/bert-base-uncased-emotion"
-HF_API_KEY = "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"
+HF_API_KEY = os.getenv("HF_API_KEY")
 
 def analyze_emotion(text):
     """调用 Hugging Face API 进行情感分析"""
