@@ -1,5 +1,0 @@
-conda activate song_recommender
-python app.py
-cd C:\Users\kundu\Desktop\chatbot
-'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'
-‘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’
