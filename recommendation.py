@@ -184,7 +184,7 @@ def recommend_songs_by_similarity(filtered_data, top_features, feature_columns, 
 
     return recommended_songs
 
-def recommend_songs_with_main_logic(data, emotion, genre=None, artist_name=None, song_name=None, n_recommendations=5):
+def recommend_songs_with_main_logic(data, emotion="joy", genre=None, artist_name=None, song_name=None, n_recommendations=5):
     """
     主函数：根据输入条件推荐歌曲。
     """
