@@ -61,89 +61,67 @@ def get_song(track_id):
         logs.append(f"Error in get_song: {str(e)}")
         return None, logs
     
-def recommend_songs_with_autoencoder(data, emotion, genre=None, n_recommendations=5):
-    """
-    使用 Autoencoder 推荐歌曲。
-    """
-    # 筛选符合条件的歌曲
-    filtered_data = data[data['emotion'] == emotion]
-    if genre:
-        filtered_data = filtered_data[filtered_data['genre'] == genre]
+class Autoencoder(nn.Module):
+    def __init__(self, input_dim, encoding_dim=5):
+        super(Autoencoder, self).__init__()
+        self.encoder = nn.Sequential(
+            nn.Linear(input_dim, encoding_dim),
+            nn.ReLU()
+        )
+        self.decoder = nn.Sequential(
+            nn.Linear(encoding_dim, input_dim),
+            nn.Sigmoid()
+        )
 
-    if filtered_data.empty:
-        print("No songs found matching the given criteria.")
-        return pd.DataFrame()
+    def forward(self, x):
+        encoded = self.encoder(x)
+        decoded = self.decoder(encoded)
+        return encoded, decoded
+
+def recommend_songs_with_autoencoder(data, emotion, genre=None, n_recommendations=5, model_path="model/autoencoder.pth", scaler_path="model/scaler.pkl"):
+    """
+    使用全局 Autoencoder 模型推荐歌曲。
+    """
+    
+    import joblib
 
     # 提取特征列
     feature_columns = [
         'danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness',
         'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo', 'time_signature'
     ]
-    features = filtered_data[feature_columns]
 
-    # 标准化特征
-    scaler = StandardScaler()
-    scaled_features = scaler.fit_transform(features)
+    # 筛选符合条件的歌曲
+    filtered_data = data[data['emotion'] == emotion]
+    if genre:
+        filtered_data = filtered_data[filtered_data['genre'] == genre]
 
-    # 定义 Autoencoder 模型
-    class Autoencoder(nn.Module):
-        def __init__(self, input_dim, encoding_dim):
-            super(Autoencoder, self).__init__()
-            self.encoder = nn.Sequential(
-                nn.Linear(input_dim, encoding_dim),
-                nn.ReLU()
-            )
-            self.decoder = nn.Sequential(
-                nn.Linear(encoding_dim, input_dim),
-                nn.Sigmoid()
-            )
+    if filtered_data.empty:
+        print("No matching songs found.")
+        return pd.DataFrame()
 
-        def forward(self, x):
-            encoded = self.encoder(x)
-            decoded = self.decoder(encoded)
-            return encoded, decoded
-
-    # 设置模型参数
-    input_dim = scaled_features.shape[1]
-    encoding_dim = 5  # 压缩到 5 维
-    model = Autoencoder(input_dim, encoding_dim)
-    criterion = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-
-    # 转换数据为 PyTorch 张量
-    scaled_features_tensor = torch.FloatTensor(scaled_features)
-    dataset = torch.utils.data.TensorDataset(scaled_features_tensor, scaled_features_tensor)
-    dataloader = torch.utils.data.DataLoader(dataset, batch_size=32, shuffle=True)
-
-    # 训练 Autoencoder
-    epochs = 50
-    for epoch in range(epochs):
-        for batch in dataloader:
-            inputs, _ = batch
-            optimizer.zero_grad()
-            _, decoded = model(inputs)
-            loss = criterion(decoded, inputs)
-            loss.backward()
-            optimizer.step()
-
-    # 获取压缩表示
+    # 加载标准化器和模型
+    scaler = joblib.load(scaler_path)
+    input_dim = len(feature_columns)
+    model = Autoencoder(input_dim)
+    model.load_state_dict(torch.load(model_path))
     model.eval()
+
+    # 标准化数据并编码
+    features = filtered_data[feature_columns]
+    scaled_features = scaler.transform(features)
+    features_tensor = torch.FloatTensor(scaled_features)
+
     with torch.no_grad():
-        compressed_features, _ = model(scaled_features_tensor)
+        encoded_features, _ = model(features_tensor)
 
-    # 计算每首歌与压缩空间原点的距离
-    distances = torch.norm(compressed_features, dim=1).numpy()
-    filtered_data['autoencoder_distance'] = distances
+    # 计算每首歌与中心的距离
+    distances = torch.norm(encoded_features, dim=1).numpy()
+    filtered_data = filtered_data.copy()
+    filtered_data['distance'] = distances
 
-    # 按距离排序，返回前 n_recommendations 的不同歌曲
-    recommended_songs = filtered_data.sort_values('autoencoder_distance').drop_duplicates(subset=['song_title']).head(n_recommendations)
-
-    # 如果推荐数量不足，随机补足
-    if len(recommended_songs) < n_recommendations:
-        remaining_songs = data[~data['song_title'].isin(recommended_songs['song_title'])]
-        additional_songs = remaining_songs.sample(n=n_recommendations - len(recommended_songs), replace=False)
-        recommended_songs = pd.concat([recommended_songs, additional_songs])
-
+    # 按距离排序返回结果
+    recommended_songs = filtered_data.sort_values('distance').head(n_recommendations)
     return recommended_songs
 
 def filter_data_by_emotion_and_genre(data, emotion, genre):
@@ -292,7 +270,9 @@ def recommend_songs_with_main_logic(data, emotion, genre=None, artist_name=None,
             return recommended_songs.head(n_recommendations)
 
     # Step 5: 如果只有 emotion 和 genre
-    recommended_songs = recommend_songs_with_autoencoder(data, emotion, genre=None, n_recommendations=n_recommendations)
+    recommended_songs = recommend_songs_with_autoencoder(data, emotion, genre=None, n_recommendations=n_recommendations,
+                                model_path="model/autoencoder.pth",
+                                scaler_path="model/scaler.pkl")
 
     # 如果推荐数量不足，随机补足
     if len(recommended_songs) < n_recommendations:
