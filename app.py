@@ -24,7 +24,7 @@ def analyze_emotion(text):
         return results[0][0]["label"].lower()
     else:
         print(f"Error: {response.text}")
-        return "neutral"
+        return "joy"
 
 # 加载歌曲数据
 song_data = pd.read_csv("song_data.csv")
@@ -42,7 +42,7 @@ def generate_gpt_response(user_input):
     global chat_history
 
     # 构建消息历史
-    messages = [{"role": "system", "content": "You are a friendly and engaging chatbot for natural conversations."}]
+    messages = [{"role": "system", "content": "You are a friendly and engaging music recommendation chatbot. All your responses should relate to music, moods, or songs."}]
     messages += [{"role": msg["role"], "content": msg["content"]} for msg in chat_history]
     messages.append({"role": "user", "content": user_input})
 
