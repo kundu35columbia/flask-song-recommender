@@ -1,0 +1,2 @@
+conda activate song_recommender
+python app.py
