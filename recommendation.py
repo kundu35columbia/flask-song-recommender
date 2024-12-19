@@ -282,7 +282,8 @@ def recommend_songs_with_main_logic(data, emotion="joy", genre=None, artist_name
     return recommended_songs.head(n_recommendations)
 
 def url_out(recommendfunc, data, emotion, genre=None, artist_name=None, song_name=None, n_recommendations=5):
-    recommended = recommendfunc(data, emotion=emotion, genre=genre, artist_name=artist_name, n_recommendations=n_recommendations)
+    recommended = recommendfunc(data, emotion=emotion, genre=genre, artist_name=artist_name, song_name=song_name
+                                , n_recommendations=n_recommendations)
     song_list = []
     for track_id in recommended['id']:
         song_list.append(get_song(track_id)[0])

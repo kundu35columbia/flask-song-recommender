@@ -114,19 +114,24 @@ def generate_response(user_input):
 
     # 在歌曲推荐阶段，根据用户输入继续处理
     if conversation_stage == 2 and selected_option in ["1", "2", "3"]:
+        song_name, artist_name = None, None  # 初始化变量
+
+        # 根据选项解析用户输入
         if selected_option == "1" and "by" in user_input.lower():
             song_artist_split = user_input.lower().split("by")
             song_name = song_artist_split[0].strip()
             artist_name = song_artist_split[1].strip()
         elif selected_option == "2":
             song_name = user_input.strip()
-            artist_name = None
         elif selected_option == "3":
-            song_name = None
             artist_name = user_input.strip()
         else:
             return "Invalid format. Please try again."
 
+        if not song_name and not artist_name:
+            return "Invalid input. Please provide a valid song or artist name."
+
+        # 进行歌曲推荐
         try:
             recommendations = url_out(
                 recommend_songs_with_main_logic,
