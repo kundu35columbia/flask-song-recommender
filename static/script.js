@@ -1,11 +1,12 @@
 document.addEventListener("DOMContentLoaded", () => {
+    const chatWindow = document.getElementById("chat-window"); // 修改为聊天窗口
     const messagesContainer = document.getElementById("messages");
     const userInput = document.getElementById("userInput");
     const sendButton = document.getElementById("sendButton");
     const recommendationsContainer = document.getElementById("recommendations");
     const loadingContainer = document.getElementById("loading-container");
 
-    let isInRecommendationStage = false; // 是否处于推荐阶段
+    let isInRecommendationStage = false;
 
     // 添加消息到聊天窗口
     const appendMessage = (text, sender) => {
@@ -13,7 +14,16 @@ document.addEventListener("DOMContentLoaded", () => {
         messageDiv.classList.add("message", sender);
         messageDiv.innerHTML = text;
         messagesContainer.appendChild(messageDiv);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+        // 自动滚动到聊天窗口底部
+        scrollToBottom();
+    };
+
+    // 自动滚动到聊天窗口底部
+    const scrollToBottom = () => {
+        setTimeout(() => {
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }, 0); // 确保 DOM 完全更新后执行
     };
 
     // 展示推荐的歌曲（图片和链接）
@@ -33,6 +43,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
             recommendationsContainer.appendChild(songDiv);
         });
+
+        // 自动滚动到聊天窗口底部
+        scrollToBottom();
     };
 
     // 判断是否进入推荐阶段
@@ -45,14 +58,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // 发送用户消息
     const sendMessage = () => {
         const userMessage = userInput.value.trim();
-        if (userMessage === "") return; // 如果输入为空则不发送
+        if (userMessage === "") return;
         appendMessage(userMessage, "user");
         userInput.value = "";
 
-        // 判断是否进入推荐阶段
         if (isRecommendationStep(userMessage)) {
-            isInRecommendationStage = true; // 标记进入推荐阶段
-            loadingContainer.classList.remove("hidden"); // 显示 loading 动画
+            isInRecommendationStage = true;
+            loadingContainer.classList.remove("hidden");
         } else {
             isInRecommendationStage = false;
         }
@@ -61,10 +73,8 @@ document.addEventListener("DOMContentLoaded", () => {
             .then(response => response.json())
             .then(data => {
                 if (isInRecommendationStage) {
-                    // 隐藏 loading 动画
                     loadingContainer.classList.add("hidden");
 
-                    // 展示推荐内容
                     try {
                         const recommendations = JSON.parse(data.response.match(/{.+}/)[0]);
                         displayRecommendations(recommendations);
@@ -74,11 +84,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         appendMessage(data.response, "bot");
                     }
                 } else {
-                    appendMessage(data.response, "bot"); // 普通对话阶段直接显示回复
+                    appendMessage(data.response, "bot");
                 }
             })
             .catch(error => {
-                // 如果发生错误，隐藏 loading 动画
                 if (isInRecommendationStage) {
                     loadingContainer.classList.add("hidden");
                 }
@@ -88,13 +97,11 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     };
 
-    // 按钮和键盘事件绑定
     sendButton.addEventListener("click", sendMessage);
     userInput.addEventListener("keypress", (e) => {
         if (e.key === "Enter") sendMessage();
     });
 
-    // 初始化时添加开场白
     appendMessage(
         "Hello! I am your personal music recommendation chatbot. I can analyze your mood based on our chat in 3 dialogues and your favorite song. Now let's start! How are you doing today?",
         "bot"

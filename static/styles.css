@@ -242,3 +242,11 @@ body {
     margin-top: 10px;
 }
 
+#chat-window {
+    flex: 1;
+    overflow-y: auto; /* 确保内容可以滚动 */
+    padding: 10px;
+    max-height: 500px; /* 限制最大高度 */
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
