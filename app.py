@@ -51,7 +51,7 @@ emotion_detected = None
 selected_option = None
 
 def generate_gpt_response(user_input):
-    """调用 GPT 生成对话回复"""
+    """Call GPT to generate conversation replies"""
     global chat_history
 
     # Build message history
@@ -74,7 +74,7 @@ def generate_gpt_response(user_input):
     return bot_response
 
 def generate_response(user_input):
-    """生成聊天回复或推荐歌曲"""
+    """Generate chat replies or song recommendations"""
     global chat_history, user_inputs, conversation_stage, emotion_detected, selected_option
 
     # Recording user input
@@ -187,7 +187,7 @@ def generate_response(user_input):
 
 @app.route("/")
 def home():
-    """渲染主页面"""
+    """Render the main page"""
     global chat_history, user_inputs, conversation_stage, emotion_detected, selected_option
     # Initialize the conversation
     chat_history = [{"role": "assistant", "content": "How are you doing today?"}]
@@ -199,7 +199,7 @@ def home():
 
 @app.route("/get", methods=["GET"])
 def chatbot_response():
-    """处理用户输入"""
+    """Handle user input"""
     user_message = request.args.get("msg")
     bot_response = generate_response(user_message)
     return jsonify({"response": bot_response})

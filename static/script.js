@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const chatWindow = document.getElementById("chat-window"); // 修改为聊天窗口
+    const chatWindow = document.getElementById("chat-window"); //Change to chat window
     const messagesContainer = document.getElementById("messages");
     const userInput = document.getElementById("userInput");
     const sendButton = document.getElementById("sendButton");
@@ -8,27 +8,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let isInRecommendationStage = false;
 
-    // 添加消息到聊天窗口
+    // Add a message to the chat window
     const appendMessage = (text, sender) => {
         const messageDiv = document.createElement("div");
         messageDiv.classList.add("message", sender);
         messageDiv.innerHTML = text;
         messagesContainer.appendChild(messageDiv);
 
-        // 自动滚动到聊天窗口底部
+        // Automatically scroll to the bottom of the chat window
         scrollToBottom();
     };
 
-    // 自动滚动到聊天窗口底部
+    // Automatically scroll to the bottom of the chat window
     const scrollToBottom = () => {
         setTimeout(() => {
             chatWindow.scrollTop = chatWindow.scrollHeight;
-        }, 0); // 确保 DOM 完全更新后执行
+        }, 0); // Ensure that the DOM is fully updated before executing
     };
 
-    // 展示推荐的歌曲（图片和链接）
+    // Display recommended songs (pictures and links)
     const displayRecommendations = (recommendations) => {
-        recommendationsContainer.innerHTML = ""; // 清空推荐容器
+        recommendationsContainer.innerHTML = ""; // Clear the recommendation container
 
         recommendations.forEach(song => {
             const songDiv = document.createElement("div");
@@ -44,18 +44,18 @@ document.addEventListener("DOMContentLoaded", () => {
             recommendationsContainer.appendChild(songDiv);
         });
 
-        // 自动滚动到聊天窗口底部
+        // Automatically scroll to the bottom of the chat window
         scrollToBottom();
     };
 
-    // 判断是否进入推荐阶段
+    // Determine whether to enter the recommendation stage
     const isRecommendationStep = (userMessage) => {
         const normalizedMessage = userMessage.trim().toLowerCase();
-        const isQuoteFormat = normalizedMessage.startsWith("'") && normalizedMessage.endsWith("'"); // 检查是否带单引号
+        const isQuoteFormat = normalizedMessage.startsWith("'") && normalizedMessage.endsWith("'"); // Check if there is a single quote
         return normalizedMessage === "4" || normalizedMessage.includes(" by ") || isQuoteFormat;
     };
 
-    // 发送用户消息
+    // Send user message
     const sendMessage = () => {
         const userMessage = userInput.value.trim();
         if (userMessage === "") return;
