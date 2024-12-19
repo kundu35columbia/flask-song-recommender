@@ -102,9 +102,17 @@ def generate_response(user_input):
                     if not recommendations:
                         return "Sorry, I couldn't find any recommendations based on your mood."
 
-                    response = "Here are some songs you might like based on your mood:<br>"
+                    response = "Here are some songs you might like:<br>"
                     for song in recommendations:
-                        response += f'<a href="{song["url"]}" target="_blank">{song["name"]}</a><br>'
+                        response += f"""
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <a href="{song['url']}" target="_blank">
+                                <img src="{song['image_url']}" alt="{song['name']}" style="width: 150px; height: 150px; border-radius: 8px;">
+                            </a>
+                            <br>
+                            <a href="{song['url']}" target="_blank">{song['name']}</a>
+                        </div>
+                        """
                     return response
                 except Exception as e:
                     print(f"Error during recommendation: {e}")
