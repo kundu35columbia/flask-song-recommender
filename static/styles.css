@@ -12,7 +12,7 @@ body {
 
 #chat-container {
     width: 400px;
-    height: 700px; /* 增加高度以容纳推荐区域 */
+    height: 700px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
     background-color: #fff;
     border-radius: 10px;
@@ -21,15 +21,18 @@ body {
     overflow: hidden;
 }
 
+/* 聊天标题 */
 #chat-header {
-    background-color: #4CAF50;
+    background: linear-gradient(90deg, #4CAF50, #007BFF);
     color: white;
     padding: 10px;
     text-align: center;
     font-size: 18px;
     font-weight: bold;
+    border-bottom: 2px solid #ddd;
 }
 
+/* 聊天窗口 */
 #chat-window {
     flex: 1;
     overflow-y: auto;
@@ -67,6 +70,7 @@ body {
     font-style: italic;
 }
 
+/* 输入框 */
 #chat-input {
     display: flex;
     padding: 10px;
@@ -88,10 +92,16 @@ body {
     padding: 10px;
     border-radius: 5px;
     cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 #chat-input button:hover {
     background-color: #45a049;
+    transform: scale(1.05); /* 鼠标悬停放大 */
+}
+
+#chat-input button:active {
+    transform: scale(0.95); /* 点击按钮缩小 */
 }
 
 /* 刷新按钮样式 */
@@ -103,47 +113,54 @@ body {
 
 #refreshButton {
     padding: 10px 20px;
-    background-color: #007BFF; /* 蓝色背景 */
+    background-color: #007BFF;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 #refreshButton:hover {
-    background-color: #0056b3; /* 深蓝色 */
+    background-color: #0056b3;
+    transform: scale(1.05); /* 鼠标悬停放大 */
+}
+
+#refreshButton:active {
+    transform: scale(0.95); /* 点击按钮缩小 */
 }
 
 /* 推荐歌曲区域 */
 #recommendations-container {
     padding: 10px;
-    background-color: #f9f9f9;
+    background: linear-gradient(to bottom, #f9f9f9, #eaf4fc); /* 渐变背景 */
     border-top: 1px solid #ddd;
     text-align: center;
 }
 
 #recommendations {
     display: flex;
-    flex-wrap: wrap; /* 自动换行 */
-    gap: 15px; /* 每个元素之间的间距 */
-    justify-content: center; /* 居中对齐 */
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
 }
 
-/* 每首歌的推荐样式 */
+/* 推荐歌曲卡片样式 */
 .recommendation-item {
     width: 150px;
     text-align: center;
     background-color: #fff;
     border-radius: 10px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     padding: 10px;
+    border: 1px solid #ddd;
 }
 
-/* 鼠标悬停放大效果 */
 .recommendation-item:hover {
     transform: scale(1.05);
+    box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.2); /* 鼠标悬停时阴影 */
 }
 
 /* 推荐歌曲图片样式 */
@@ -152,6 +169,11 @@ body {
     height: 120px;
     border-radius: 10px;
     margin-bottom: 10px;
+    transition: transform 0.3s ease;
+}
+
+.recommendation-item img:hover {
+    transform: scale(1.1); /* 鼠标悬停时放大 */
 }
 
 /* 推荐歌曲标题样式 */
@@ -160,8 +182,63 @@ body {
     text-decoration: none;
     font-size: 14px;
     font-weight: bold;
+    display: block;
+    margin-top: 5px;
 }
 
 .recommendation-item a:hover {
     text-decoration: underline;
 }
+
+/* Loading 动画容器 */
+#loading-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.3s ease;
+}
+
+.hidden {
+    display: none;
+    opacity: 0;
+}
+
+/* Loading 动画 */
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #007BFF;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+#loading-container {
+    pointer-events: none; /* 加上这一行确保隐藏时不会影响鼠标事件 */
+}
+
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+#loading-container p {
+    font-family: Arial, sans-serif;
+    font-size: 18px;
+    color: #333;
+    margin-top: 10px;
+}
+

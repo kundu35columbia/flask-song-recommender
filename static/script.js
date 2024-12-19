@@ -2,7 +2,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const messagesContainer = document.getElementById("messages");
     const userInput = document.getElementById("userInput");
     const sendButton = document.getElementById("sendButton");
-    const recommendationsContainer = document.getElementById("recommendations"); // 新增推荐区域容器
+    const recommendationsContainer = document.getElementById("recommendations");
+    const loadingContainer = document.getElementById("loading-container");
+
+    let isInRecommendationStage = false; // 是否处于推荐阶段
 
     // 添加消息到聊天窗口
     const appendMessage = (text, sender) => {
@@ -32,6 +35,13 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
 
+    // 判断是否进入推荐阶段
+    const isRecommendationStep = (userMessage) => {
+        const normalizedMessage = userMessage.trim().toLowerCase();
+        const isQuoteFormat = normalizedMessage.startsWith("'") && normalizedMessage.endsWith("'"); // 检查是否带单引号
+        return normalizedMessage === "4" || normalizedMessage.includes(" by ") || isQuoteFormat;
+    };
+
     // 发送用户消息
     const sendMessage = () => {
         const userMessage = userInput.value.trim();
@@ -39,13 +49,23 @@ document.addEventListener("DOMContentLoaded", () => {
         appendMessage(userMessage, "user");
         userInput.value = "";
 
+        // 判断是否进入推荐阶段
+        if (isRecommendationStep(userMessage)) {
+            isInRecommendationStage = true; // 标记进入推荐阶段
+            loadingContainer.classList.remove("hidden"); // 显示 loading 动画
+        } else {
+            isInRecommendationStage = false;
+        }
+
         fetch(`/get?msg=${encodeURIComponent(userMessage)}`)
             .then(response => response.json())
             .then(data => {
-                // 检查是否是推荐结果
-                if (data.response.startsWith("Here are some songs you might like")) {
+                if (isInRecommendationStage) {
+                    // 隐藏 loading 动画
+                    loadingContainer.classList.add("hidden");
+
+                    // 展示推荐内容
                     try {
-                        // 解析推荐数据
                         const recommendations = JSON.parse(data.response.match(/{.+}/)[0]);
                         displayRecommendations(recommendations);
                         appendMessage("Here are some songs I recommend for you:", "bot");
@@ -54,10 +74,15 @@ document.addEventListener("DOMContentLoaded", () => {
                         appendMessage(data.response, "bot");
                     }
                 } else {
-                    appendMessage(data.response, "bot");
+                    appendMessage(data.response, "bot"); // 普通对话阶段直接显示回复
                 }
             })
             .catch(error => {
+                // 如果发生错误，隐藏 loading 动画
+                if (isInRecommendationStage) {
+                    loadingContainer.classList.add("hidden");
+                }
+
                 appendMessage("An error occurred. Please try again.", "bot");
                 console.error("Error:", error);
             });
