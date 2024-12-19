@@ -1,3 +1,4 @@
+/* 通用样式 */
 body {
     font-family: Arial, sans-serif;
     background-color: #f9f9f9;
@@ -11,7 +12,7 @@ body {
 
 #chat-container {
     width: 400px;
-    height: 600px;
+    height: 700px; /* 增加高度以容纳推荐区域 */
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
     background-color: #fff;
     border-radius: 10px;
@@ -91,4 +92,76 @@ body {
 
 #chat-input button:hover {
     background-color: #45a049;
+}
+
+/* 刷新按钮样式 */
+#refresh-container {
+    text-align: center;
+    padding: 10px;
+    border-top: 1px solid #ddd;
+}
+
+#refreshButton {
+    padding: 10px 20px;
+    background-color: #007BFF; /* 蓝色背景 */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+#refreshButton:hover {
+    background-color: #0056b3; /* 深蓝色 */
+}
+
+/* 推荐歌曲区域 */
+#recommendations-container {
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-top: 1px solid #ddd;
+    text-align: center;
+}
+
+#recommendations {
+    display: flex;
+    flex-wrap: wrap; /* 自动换行 */
+    gap: 15px; /* 每个元素之间的间距 */
+    justify-content: center; /* 居中对齐 */
+}
+
+/* 每首歌的推荐样式 */
+.recommendation-item {
+    width: 150px;
+    text-align: center;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    padding: 10px;
+}
+
+/* 鼠标悬停放大效果 */
+.recommendation-item:hover {
+    transform: scale(1.05);
+}
+
+/* 推荐歌曲图片样式 */
+.recommendation-item img {
+    width: 120px;
+    height: 120px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+/* 推荐歌曲标题样式 */
+.recommendation-item a {
+    color: #007BFF;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.recommendation-item a:hover {
+    text-decoration: underline;
 }
