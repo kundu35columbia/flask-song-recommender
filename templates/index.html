@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Music Recommendation Chatbot</title>
     <link rel="stylesheet" href="/static/styles.css">
+    <script>
+        // 刷新页面函数
+        function refreshPage() {
+            window.location.href = "/"; // 刷新当前页面
+        }
+    </script>
 </head>
 <body>
     <div id="chat-container">
@@ -15,6 +21,10 @@
         <div id="chat-input">
             <input type="text" id="userInput" placeholder="Type your message here..." autocomplete="off">
             <button id="sendButton">Send</button>
+        </div>
+        <!-- 添加刷新按钮 -->
+        <div id="refresh-container">
+            <button id="refreshButton" onclick="refreshPage()">Refresh</button>
         </div>
     </div>
     <script src="/static/script.js"></script>
