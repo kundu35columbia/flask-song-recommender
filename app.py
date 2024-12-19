@@ -5,32 +5,45 @@ from flask import Flask, render_template, request, jsonify
 import requests
 from recommendation import url_out, recommend_songs_with_main_logic
 
-# 初始化 Flask 应用
 app = Flask(__name__)
 
-# 设置 OpenAI API 密钥
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# 使用 Hugging Face Inference API 进行情感分析
-HF_API_URL = "https://api-inference.huggingface.co/models/bhadresh-savani/bert-base-uncased-emotion"
+# Sentiment analysis using Hugging Face Inference API
+HF_API_URL = "https://api-inference.huggingface.co/models/j-hartmann/emotion-english-distilroberta-base"
 HF_API_KEY = os.getenv("HF_API_KEY")
 
 def analyze_emotion(text):
-    """调用 Hugging Face API 进行情感分析"""
     headers = {"Authorization": f"Bearer {HF_API_KEY}"}
-    response = requests.post(HF_API_URL, headers=headers, json={"inputs": text})
-    if response.status_code == 200:
-        results = response.json()
-        return results[0][0]["label"].lower()
-    else:
-        print(f"Error: {response.text}")
-        return "joy"
+    try:
+        response = requests.post(HF_API_URL, headers=headers, json={"inputs": text}, timeout=10)
+        if response.status_code == 200:
+            results = response.json()
+            print("Emotion API Response:", results) 
+            
+            if isinstance(results, list) and len(results) > 0 and isinstance(results[0], list):
+                results = results[0] 
 
-# 加载歌曲数据
+
+            if isinstance(results, list) and all("label" in r and "score" in r for r in results):
+
+                detected_emotion = max(results, key=lambda x: x["score"])["label"]
+                return detected_emotion.lower()
+            else:
+                print("Unexpected API response format:", results)
+                return "neutral" 
+        else:
+            print(f"Error: {response.text}")
+            return "neutral"  
+    except requests.exceptions.RequestException as e:
+        print(f"Request failed: {e}")
+        return "neutral" 
+
+# Load song data
 song_data = pd.read_csv("song_data.csv")
 song_data["emotion"] = song_data["emotion"].str.lower()
 
-# 聊天记录和状态
+# Chat history and status
 chat_history = []
 user_inputs = []
 conversation_stage = 0
@@ -41,12 +54,12 @@ def generate_gpt_response(user_input):
     """调用 GPT 生成对话回复"""
     global chat_history
 
-    # 构建消息历史
+    # Build message history
     messages = [{"role": "system", "content": "You are a friendly and engaging music recommendation chatbot. All your responses should relate to music, moods, or songs."}]
     messages += [{"role": msg["role"], "content": msg["content"]} for msg in chat_history]
     messages.append({"role": "user", "content": user_input})
 
-    # 调用 OpenAI API
+    # Calling OpenAI API
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=messages,
@@ -54,7 +67,7 @@ def generate_gpt_response(user_input):
     )
     bot_response = response.choices[0].message.content
 
-    # 更新聊天历史
+    # Update chat history
     chat_history.append({"role": "user", "content": user_input})
     chat_history.append({"role": "assistant", "content": bot_response})
 
@@ -64,10 +77,10 @@ def generate_response(user_input):
     """生成聊天回复或推荐歌曲"""
     global chat_history, user_inputs, conversation_stage, emotion_detected, selected_option
 
-    # 记录用户输入
+    # Recording user input
     user_inputs.append(user_input)
 
-    # 如果对话数达到 3，进入情绪分析阶段
+    # If the number of conversations reaches 3, enter the sentiment analysis phase
     if len(user_inputs) == 3 and conversation_stage == 1:
         conversation_stage += 1
         emotion_detected = analyze_emotion(" ".join(user_inputs))
@@ -80,7 +93,7 @@ def generate_response(user_input):
             "Please enter the option number (1, 2, 3, or 4)."
         )
 
-    # 用户选择推荐选项
+    # User selects recommended options
     if conversation_stage == 2 and not selected_option:
         if user_input in ["1", "2", "3", "4"]:
             selected_option = user_input
@@ -120,11 +133,11 @@ def generate_response(user_input):
         else:
             return "Please enter a valid option number (1, 2, 3, or 4)."
 
-    # 在歌曲推荐阶段，根据用户输入继续处理
+    # In the song recommendation stage, continue processing based on user input
     if conversation_stage == 2 and selected_option in ["1", "2", "3"]:
-        song_name, artist_name = None, None  # 初始化变量
+        song_name, artist_name = None, None  # Initialize variables
 
-        # 根据选项解析用户输入
+        # Parse user input based on options
         if selected_option == "1" and "by" in user_input.lower():
             song_artist_split = user_input.lower().split("by")
             song_name = song_artist_split[0].strip()
@@ -139,7 +152,7 @@ def generate_response(user_input):
         if not song_name and not artist_name:
             return "Invalid input. Please provide a valid song or artist name."
 
-        # 进行歌曲推荐
+        # Make song recommendations
         try:
             recommendations = url_out(
                 recommend_songs_with_main_logic,
@@ -153,7 +166,7 @@ def generate_response(user_input):
             if not recommendations:
                 return "Sorry, I couldn't find any recommendations based on your input."
 
-            # 构建包含图片和链接的 HTML
+            # Build HTML with images and links
             response = "Here are some songs you might like:<br>"
             for song in recommendations:
                 response += f"""
@@ -176,7 +189,7 @@ def generate_response(user_input):
 def home():
     """渲染主页面"""
     global chat_history, user_inputs, conversation_stage, emotion_detected, selected_option
-    # 初始化对话
+    # Initialize the conversation
     chat_history = [{"role": "assistant", "content": "How are you doing today?"}]
     user_inputs = []
     conversation_stage = 1
