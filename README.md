@@ -1,5 +1,3 @@
-# Recreate the README file after execution state reset
-readme_content = """
 # Music Recommendation Chatbot
 
 This project is a **music recommendation chatbot** that provides personalized song suggestions based on user input and emotional context. The system leverages state-of-the-art models like **EmoRoBERTa** for emotion analysis and integrates item-based collaborative filtering to generate accurate and diverse music recommendations. The chatbot is deployed and accessible at **[flask-song-recommender.onrender.com](https://flask-song-recommender.onrender.com)**.
